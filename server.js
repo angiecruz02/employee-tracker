@@ -1,54 +1,143 @@
-const inquirer = require('inquirer');
-const mysql = require("mysql2");
+const inquirer = require("inquirer");
+const mysql = require("mysql2/promise"); 
+const {
+  viewAllEmployees,
+  viewAllDepartments,
+  viewAllRoles,
+  addEmployee,
+  updateEmployeeRole,
+  addRole,
+  addDepartment,
+} = require("./config/function");
 
-function mainMenu() {
-    const choices = [
-        "View all employees",
-        "Add employee",
-        "Update employee role",
-        "View all roles",
-        "Add role",
-        "View all departments",
-        "Add department",
-        "Quit"
-    ];
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'Chocolate123',
+  database: 'employee_db'
+});
 
-    inquirer.prompt([
-        {
-            type: "list",
-            name: "action",
-            message: "What would you like to do?",
-            choices: choices
-        }
-    ]).then(function (answers) {
-        switch (answers.action) {
-            case "View all employees":
-                // Call the function to view all employees
-                break;
-            case "Add employee":
-                // Call the function to add an employee
-                break;
-            case "Update employee role":
-                // Call the function to update an employee's role
-                break;
-            case "View all roles":
-                // Call the function to view all roles
-                break;
-            case "Add role":
-                // Call the function to add a role
-                break;
-            case "View all departments":
-                // Call the function to view all departments
-                break;
-            case "Add department":
-                // Call the function to add a department
-                break;
-            case "Quit":
-                console.log("Exiting the application. Goodbye!");
-                process.exit(0); // Exit the application
-                break;
-        }
+const promptUser = () => {
+  inquirer
+    .prompt([
+      {
+        name: "action",
+        type: "list",
+        message: "What would you like to do?",
+        choices: [
+          "View all employees",
+          "Add employee",
+          "Update employee role",
+          "View all roles",
+          "Add role",
+          "View all departments",
+          "Add department",
+          "Exit",
+        ],
+      },
+    ])
+    .then((answer) => {
+      switch (answer.action) {
+        case "View all employees":
+          viewAllEmployees(db)
+            .then(() => {
+              promptUser();
+            })
+            .catch((err) => {
+              console.error("Error while viewing employees:", err);
+              promptUser();
+            });
+          break;
+
+        case "Add employee":
+          addEmployee(db)
+            .then(() => {
+              promptUser();
+            })
+            .catch((err) => {
+              console.error("Error in adding an employee.", err);
+              promptUser();
+            });
+          break;
+
+        case "Update employee role":
+          updateEmployeeRole(db)
+            .then(() => {
+              promptUser();
+            })
+            .catch((err) => {
+              console.error("Error in updating employee.", err);
+              promptUser();
+            });
+          break;
+
+        case "View all roles":
+          viewAllRoles(db)
+            .then(() => {
+              promptUser();
+            })
+            .catch((err) => {
+              console.error("Error while viewing roles.", err);
+              promptUser();
+            });
+          break;
+
+        case "Add role":
+          addRole(db)
+            .then(() => {
+              promptUser();
+            })
+            .catch((err) => {
+              console.error("Error while trying to add a new role.", err);
+              promptUser();
+            });
+          break;
+
+        case "View all departments":
+          viewAllDepartments(db)
+            .then(() => {
+              promptUser();
+            })
+            .catch((err) => {
+              console.error("Error while viewing all departments.", err);
+              promptUser();
+            });
+          break;
+
+        case "Add department":
+          addDepartment(db)
+            .then(() => {
+              promptUser();
+            })
+            .catch((err) => {
+              console.error("Error while trying to add a department.", err);
+              promptUser();
+            });
+          break;
+
+        case "Exit":
+          console.log("Goodbye!");
+          process.exit();
+          break;
+
+        default:
+          console.log("Invalid choice");
+          promptUser();
+          break;
+      }
     });
-}
+};
 
-mainMenu();
+
+const appFunctions = {
+  viewAllEmployees,
+  viewAllDepartments,
+  viewAllRoles,
+  addEmployee,
+  updateEmployeeRole,
+  addRole,
+  addDepartment,
+};
+
+// Call the initial prompt to start the application
+promptUser(appFunctions);
